@@ -44,19 +44,22 @@ pipeline {
             }
         }
         stage('SonarQube Analysis') {
-            steps {
-                sh """
-                    docker run --rm \
-                        -e SONAR_HOST_URL=${SONAR_HOST} \
-                        -e SONAR_TOKEN=${SONAR_TOKEN} \
-                        -v \$(pwd):/usr/src \
-                        sonarsource/sonar-scanner-cli \
-                        -Dsonar.projectKey=techstore \
-                        -Dsonar.sources=. \
-                        -Dsonar.exclusions=venv/**,tests/**,**/__pycache__/**
-                """
-            }
-        }
+    steps {
+        sh """
+            docker run --rm \
+                -e SONAR_HOST_URL=${SONAR_HOST} \
+                -e SONAR_TOKEN=${SONAR_TOKEN} \
+                -v \$(pwd):/usr/src \
+                sonarsource/sonar-scanner-cli \
+                -Dsonar.projectKey=techstore \
+                -Dsonar.sources=. \
+                -Dsonar.language=py \
+                -Dsonar.python.version=3 \
+                -Dsonar.exclusions=venv/**,tests/**,**/__pycache__/** \
+                -Dsonar.python.coverage.reportPaths=coverage.xml
+        """
+    }
+}
         stage('Build Docker Image') {
             steps {
                 sh """
