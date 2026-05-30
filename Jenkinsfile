@@ -92,9 +92,23 @@ pipeline {
         }
         success {
             echo "Pipeline basariyla tamamlandi!"
+            withCredentials([string(credentialsId: 'slack-webhook', variable: 'SLACK_URL')]) {
+                sh """
+                    curl -X POST -H 'Content-type: application/json' \
+                    --data '{"text":"✅ TechStore Deploy Basarili! Build #${env.BUILD_NUMBER}"}' \
+                    \$SLACK_URL
+                """
+            }
         }
         failure {
             echo "Pipeline basarisiz!"
+            withCredentials([string(credentialsId: 'slack-webhook', variable: 'SLACK_URL')]) {
+                sh """
+                    curl -X POST -H 'Content-type: application/json' \
+                    --data '{"text":"❌ TechStore Deploy Basarisiz! Build #${env.BUILD_NUMBER}"}' \
+                    \$SLACK_URL
+                """
+            }
         }
     }
 }
