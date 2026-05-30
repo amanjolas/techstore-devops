@@ -1,22 +1,18 @@
 pipeline {
     agent any
-
     environment {
         DOCKER_IMAGE    = 'techstore-app'
         DOCKER_HUB_USER = 'amanjolas'
         SONAR_HOST      = 'http://host.docker.internal:9000'
         SONAR_TOKEN     = credentials('sonar-token')
     }
-
     stages {
-
         stage('Checkout') {
             steps {
                 checkout scm
                 echo "Kod alindi: ${env.GIT_COMMIT?.take(7)}"
             }
         }
-
         stage('Setup') {
             steps {
                 sh '''
@@ -27,7 +23,6 @@ pipeline {
                 '''
             }
         }
-
         stage('Unit Tests') {
             steps {
                 sh '''
@@ -48,13 +43,12 @@ pipeline {
                 }
             }
         }
-
         stage('SonarQube Analysis') {
             steps {
                 sh """
                     docker run --rm \
                         -e SONAR_HOST_URL=${SONAR_HOST} \
-                        -e SONAR_LOGIN=${SONAR_TOKEN} \
+                        -e SONAR_TOKEN=${SONAR_TOKEN} \
                         -v \$(pwd):/usr/src \
                         sonarsource/sonar-scanner-cli \
                         -Dsonar.projectKey=techstore \
@@ -63,7 +57,6 @@ pipeline {
                 """
             }
         }
-
         stage('Build Docker Image') {
             steps {
                 sh """
@@ -72,7 +65,6 @@ pipeline {
                 echo "Docker imaji olusturuldu"
             }
         }
-
         stage('Smoke Test') {
             steps {
                 sh '''
@@ -90,7 +82,6 @@ pipeline {
             }
         }
     }
-
     post {
         always {
             sh "docker image prune -f || true"
